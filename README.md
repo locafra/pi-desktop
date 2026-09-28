@@ -15,8 +15,8 @@ credenziali. La finestra carica il proxy locale.
 ## Uso
 
 1. Scarica l'installer dall'[ultima release](../../releases/latest):
-   - **Windows**: `pi agent_x.y.z_x64-setup.exe`
-   - **macOS** (Intel e Apple Silicon): `pi agent_x.y.z_universal.dmg`. L'app non è firmata
+   - **Windows**: `pi.agent_x.y.z_x64-setup.exe`
+   - **macOS** (Intel e Apple Silicon): `pi.agent_x.y.z_universal.dmg`. L'app non è firmata
      da Apple: al primo avvio clic destro → **Apri**.
 2. Al primo avvio inserisci indirizzo del server, utente e password.
    La password resta nel portachiavi del sistema (Credential Manager / Keychain).
