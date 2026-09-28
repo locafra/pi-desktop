@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pi agent</title>
+<style>
+  :root {
+    --bg: #0f1722; --card: #17212f; --line: #263346; --text: #e6edf5; --muted: #8b9bb0;
+    --accent: #11c4da; --brand: #054177; --err: #ff6b6b;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #eef2f6; --card: #fff; --line: #d5dde7; --text: #122033; --muted: #5b6b80; --err: #c62828; color-scheme: light; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    display: grid; place-items: center; padding: 24px;
+  }
+  main { width: 100%; max-width: 380px; }
+  .logo { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .logo img { width: 52px; height: 52px; border-radius: 12px; }
+  .logo h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+  .logo p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  form { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  input[type=text], input[type=url], input[type=password] {
+    width: 100%; padding: 10px 12px; margin-bottom: 14px; font: inherit; color: var(--text);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px; outline: none;
+  }
+  input:focus { border-color: var(--accent); }
+  .row { display: flex; align-items: center; gap: 8px; margin: 2px 0 18px; font-size: 14px; }
+  .row input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .row label { margin: 0; color: var(--text); font-size: 14px; }
+  button {
+    width: 100%; padding: 11px; font: inherit; font-weight: 600; border: 0; border-radius: 8px;
+    background: var(--accent); color: #032b40; cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: default; }
+  #msg { min-height: 20px; margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+  #msg.err { color: var(--err); }
+  .foot { margin-top: 14px; text-align: center; font-size: 12px; color: var(--muted); }
+  .foot a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <div class="logo">
+    <img src="icon.svg" alt="">
+    <div>
+      <h1>pi agent</h1>
+      <p>Il terminale di pi sul tuo server</p>
+    </div>
+  </div>
+  <form id="f" autocomplete="off">
+    <label for="url">Indirizzo del server</label>
+    <input id="url" type="url" placeholder="https://pi.esempio.com" required spellcheck="false">
+    <label for="user">Nome utente</label>
+    <input id="user" type="text" required spellcheck="false" autocapitalize="off">
+    <label for="pw">Password</label>
+    <input id="pw" type="password">
+    <div class="row">
+      <input id="remember" type="checkbox" checked>
+      <label for="remember">Ricorda la password (portachiavi del sistema)</label>
+    </div>
+    <button id="go" type="submit">Connetti</button>
+    <p id="msg" role="status"></p>
+  </form>
+  <p class="foot"><a href="#" id="forget">Dimentica la password salvata</a></p>
+</main>
+<script>
+  const { invoke } = window.__TAURI__.core;
+  const $ = (id) => document.getElementById(id);
+  const say = (text, err) => { $('msg').textContent = text; $('msg').className = err ? 'err' : ''; };
+  const busy = (on) => { $('go').disabled = on; $('go').textContent = on ? 'Connessione…' : 'Connetti'; };
+  const manual = new URLSearchParams(location.search).has('manual');
+
+  async function init() {
+    const acc = await invoke('get_account');
+    if (!acc) { $('url').focus(); return; }
+    $('url').value = acc.url;
+    $('user').value = acc.username;
+    if (acc.has_password) $('pw').placeholder = 'salvata nel portachiavi';
+    if (acc.has_password && !manual) {
+      busy(true); say('Connessione a ' + acc.url);
+      try { await invoke('connect_saved'); return; }
+      catch (e) { say(String(e), true); }
+      busy(false);
+    }
+    $('pw').focus();
+  }
+
+  $('f').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    busy(true); say('Verifica delle credenziali…');
+    try {
+      await invoke('connect', {
+        url: $('url').value, username: $('user').value,
+        password: $('pw').value, remember: $('remember').checked,
+      });
+    } catch (e) { say(String(e), true); busy(false); }
+  });
+
+  $('forget').addEventListener('click', async (ev) => {
+    ev.preventDefault();
+    await invoke('forget');
+    $('pw').placeholder = ''; say('Password rimossa dal portachiavi.');
+  });
+
+  init();
+</script>
+</body>
+</html>

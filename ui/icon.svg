@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- pi agent — marchio della famiglia MyLab: pi greco con prompt del terminale -->
+  <rect width="512" height="512" rx="112" fill="#fff"/>
+  <g fill="none" stroke="#054177" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M112 156C150 132 190 128 256 128H412"/>
+    <path d="M208 132C204 232 188 322 146 392"/>
+    <path d="M330 132V330C330 372 350 394 396 380"/>
+  </g>
+  <g fill="none" stroke="#11C4DA" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M392 212L434 244L392 276"/>
+  </g>
+  <circle cx="434" cy="392" r="14" fill="#11C4DA"/>
+</svg>
